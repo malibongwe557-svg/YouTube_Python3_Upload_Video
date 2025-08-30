@@ -1,0 +1,47 @@
+import os
+import random
+import datetime
+from gtts import gTTS
+from moviepy.editor import ImageClip, concatenate_videoclips, AudioFileClip, CompositeAudioClip
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+from google_auth_oauthlib.flow import InstalledAppFlow
+from PIL import Image, ImageDraw, ImageFont
+
+# ---------------- STEP 1: 90 Bible Stories ----------------
+stories = [
+    # 1–30 Genesis → Jesus
+    {"title": "The Creation Story", "text": "In the beginning, God created the heavens and the earth. He spoke light into existence, separated land from water, filled the sky with stars, and the seas with fish. Finally, He made man and woman in His image and blessed them."},
+    {"title": "Adam and Eve in the Garden", "text": "Adam and Eve lived in Eden where God provided everything. They disobeyed God by eating the forbidden fruit, bringing sin into the world, but God promised a Savior to restore humanity."},
+    {"title": "Cain and Abel", "text": "The first children of Adam and Eve, Cain and Abel, offered sacrifices to God. Abel’s was accepted, Cain’s was not. In jealousy, Cain killed Abel, showing how sin spreads, yet God showed mercy even to Cain."},
+    {"title": "Noah and the Ark", "text": "God told Noah to build an ark to save his family and animals from a worldwide flood. Noah obeyed, and when the waters receded, God made a covenant symbolized by a rainbow."},
+    {"title": "The Tower of Babel", "text": "After the flood, people built a tall tower to make a name for themselves. God confused their language, scattering them across the earth to remind them that His will must be followed."},
+    {"title": "The Call of Abraham", "text": "God called Abraham to leave his home and promised to make him a great nation. Abraham trusted God’s word, and through his descendants all nations would be blessed."},
+    {"title": "Abraham and Isaac", "text": "God tested Abraham by asking him to sacrifice his son Isaac. Abraham obeyed, but God provided a ram instead, showing His plan of salvation through a substitute sacrifice."},
+    {"title": "Joseph and His Brothers", "text": "Joseph’s brothers sold him into slavery in Egypt, but God raised him to power. Later, he forgave them, saying, 'You meant it for evil, but God meant it for good.'"},
+    {"title": "Moses and the Burning Bush", "text": "God appeared to Moses in a burning bush and called him to lead Israel out of Egypt. Moses doubted, but God promised to be with him."},
+    {"title": "The Ten Plagues", "text": "God sent ten plagues to Egypt when Pharaoh refused to free Israel. The final plague was the death of the firstborn, but God saved Israel through the blood of the lamb."},
+    {"title": "The Red Sea Crossing", "text": "Trapped between Pharaoh’s army and the sea, Moses raised his staff and God parted the waters. Israel walked through on dry ground, and the pursuing Egyptians were drowned."},
+    {"title": "The Ten Commandments", "text": "At Mount Sinai, God gave Moses the Ten Commandments as a covenant with His people, teaching them how to love God and live with one another."},
+    {"title": "Joshua and Jericho", "text": "God told Joshua to march around Jericho for seven days. On the seventh day, the walls fell, and Israel took the city by God’s power, not their own strength."},
+    {"title": "Gideon’s 300 Men", "text": "God chose Gideon and only 300 soldiers to defeat a vast Midianite army. By using trumpets and torches, God showed that victory comes from Him alone."},
+    {"title": "Samson and Delilah", "text": "Samson had great strength given by God, but Delilah tricked him into revealing the secret of his hair. Even in weakness, God used Samson to defeat Israel’s enemies."},
+    {"title": "Samuel Hears God’s Voice", "text": "As a boy serving in the temple, Samuel heard God calling him. He answered, 'Speak, Lord, for Your servant is listening,' becoming a great prophet for Israel."},
+    {"title": "David and Goliath", "text": "Young David faced the giant Goliath with only a sling and stone, declaring, 'The battle is the Lord’s.' He won, showing that faith in God brings victory."},
+    {"title": "Solomon’s Wisdom", "text": "God granted King Solomon great wisdom. He judged fairly between two women claiming the same baby, proving that true wisdom comes from God."},
+    {"title": "Elijah and the Prophets of Baal", "text": "Elijah challenged false prophets to call on their god, but only the Lord answered by fire. Israel saw that the Lord is the true God."},
+    {"title": "Elisha and the Widow’s Oil", "text": "A widow had only a small jar of oil, but through Elisha, God multiplied it until she had enough to pay her debts and live in abundance."},
+    {"title": "Jonah and the Great Fish", "text": "Jonah ran from God’s command to preach in Nineveh, but a great fish swallowed him. After three days, Jonah prayed, and God gave him another chance."},
+    {"title": "Daniel in the Lion’s Den", "text": "Daniel kept praying to God despite a law against it. Thrown into a den of lions, God shut their mouths, proving His power to save."},
+    {"title": "Shadrach, Meshach, and Abednego", "text": "These three men refused to worship an idol and were thrown into a fiery furnace. God kept them unharmed, walking with them in the fire."},
+    {"title": "Nehemiah Rebuilds the Wall", "text": "Nehemiah led God’s people to rebuild Jerusalem’s walls despite opposition. With prayer and hard work, the wall was completed in 52 days."},
+    {"title": "The Birth of Jesus", "text": "Jesus was born in Bethlehem to Mary and Joseph. Angels announced His birth to shepherds, declaring, 'Glory to God in the highest!'"},
+    {"title": "The Baptism of Jesus", "text": "When Jesus was baptized by John, the heavens opened, the Spirit descended like a dove, and a voice said, 'This is My beloved Son.'"},
+    {"title": "The Feeding of 5,000", "text": "With five loaves and two fish, Jesus fed over 5,000 people. This miracle showed He is the Bread of Life who provides abundantly."},
+    {"title": "Jesus Walks on Water", "text": "During a storm, Jesus walked on the sea to His disciples. Peter stepped out in faith but began to sink. Jesus saved him, teaching trust in Him."},
+    {"title": "The Good Samaritan", "text": "Jesus told a parable of a man helped by a Samaritan when others passed by. He taught that true love shows mercy to anyone in need."},
+    {"title": "The Crucifixion and Resurrection", "text": "Jesus died on the cross for our sins and rose on the third day. His victory over death gives us forgiveness and eternal life if we believe in Him."},
+
+    # 31–90 (Acts, Epistles, Revelation) — Use the stories I gave in the previous message
+    # Copy stories 31–90 exactly as provided earlier
+]
